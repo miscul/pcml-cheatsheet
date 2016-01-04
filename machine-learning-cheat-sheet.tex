@@ -78,6 +78,8 @@ $\implies p(X = x) = \frac{1}{\sqrt{2 \pi \sigma^2}} \exp{(- \frac{1}{2} ( \frac
 Poisson distribution: $\mathcal{P}(X| \lambda)$ \\
 $\implies p(X = k) = \frac{\lambda ^ k}{k!} \exp{(- \lambda)}$
 
+Exponential family: $p(y|\eta) := \frac{h(y)}{Z} \exp[\eta^T \phi(y) - A(\eta)]$, $\frac{h(y)}{Z}$ partition fct, $\eta$ natural parameter, $\phi(y)$ sufficient stat, $A(\eta)$ log-partition fct $\frac{\partial A(\eta)}{\partial \eta} = E[\phi(\eta)], \frac{\partial^2 A(\eta)}{\partial \eta^2} = \Var[\phi(\eta)]$
+
 \subsection{Properties}
 Matrix multiplication complexity ($n \times m$ and $m \times p$): $\mathcal{O}(nmp)$, inversion: $\mathcal{O}(n^3)$
 
@@ -237,15 +239,14 @@ There's no closed form, we can use gradient descent.
 Linearly separable problem has many solutions $\Rightarrow$ solved by L2 regularization (penalized log. reg.): $\min\limits_\beta -\sum\limits_{n=1}^N \log p(y_n | \bf{x}_n^T, \bbeta) + \lambda \sum\limits_{d=1}^D\beta^2_d$ or $\bf{X^T S X} + \lambda \bf{I}_{D+1}$ (top-left = 0).
 
 \subsection{Generalized linear model}
-The GLM consists of three elements:
-\begin{itemize}
-  \item A probability distribution from the exponential family.
-  \item A linear predictor $\hat y = \bf{X} \bbeta$ .
-  \item A link function g such that $E(y) = \mu = g^{-1}(\eta)$.
-\end{itemize}
+The GLM consists of three elements: \textbf{1)} a probability distribution from the exponential family; \textbf{2)} a linear predictor $\hat y = \bf{X} \bbeta$; \textbf{3)} a link function g such that $E(\phi(y)) = \mu = g^{-1}(\eta)$.
 
-In a generalized linear model (GLM), each outcome of the dependent variables $y$ is assumed to be generated from a particular distribution in the exponential family, a large range of probability distributions that includes the normal, binomial, Poisson and gamma distributions, among others.
+In a GLM each outcome of the dependent variables $y$ is assumed to be generated from a particular distribution in the exponential family, e.g. normal, binomial, Poisson, gamma, etc.
 
+ML cost $\min \mathcal{L}(\bbeta) = - \sum_{n=1}^N \log p(y_n | \eta_n)$, $p$ exp distribution, natural parameters $\eta_n = \tilde{\bf{x}}_n^T \bbeta$. Normal equation: $\frac{\partial \mathcal{L}}{\partial \bbeta} = \tilde{\bf{X}}^T [ \bf{g}^{-1}(\eta_n) - \phi(\bf{y})]$.
+
+\subsection{$k$-Nearest Neighbor}
+$f_k(\bf{x}_*) = k^{-1} \sum_{\bf{x}_n \in nbh_k (\bf{x}_*)}$, $nbh_k (\bf{x})}$ $k$ closest points of $\bf{x}$.
 
 \subsection{Cost functions}
 RMSE: $\sqrt{\frac{1}{N} \sum_{n=1}^{N}\left[y_n- \hat{p_n} \right]^2}$
@@ -456,10 +457,9 @@ $P_{\theta_1}=P_{\theta_2} \quad\Rightarrow\quad \theta_1=\theta_2 \quad\ \text{
 A non-identifiable model will typically have many local optima yielding the same cost, e.g. $\mathcal{L}(W, Z) = \mathcal{L}(aW, \frac{1}{a} Z)$
 
 \subsection{Curse of dimensionality}
-With the dimensionality increase, every data point becomes arbitrarily far
-from every other data point and therefore the choice of nearest neighbor becomes random.
-In high dimension, data only covers a tiny fraction of the input space, making generalization extremely difficult.
-Or in other words, the volume of the space increases so fast that the available data become sparse.
+Dimensionality increase $\Rightarrow$ all points spread $\Rightarrow$ NN choice becomes random. 
+In high dimension, data only covers a tiny fraction of the input space, making generalization difficult and increasing bias and variance.
+Expected edge length $e_D(r) = r^{1/D}$: to capture $r$ of data we must cover $e_D(r)$ of input variable range $\Rightarrow$ sampling density proportional to $N^{1/D}$.
 
 \subsection{Primal vs. Dual}
 Instead of working in the \textbf{column space} of our data, we can work in the \textbf{row space}:
