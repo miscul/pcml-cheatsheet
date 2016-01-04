@@ -94,7 +94,8 @@ $\implies \log ( \sum_x x \cdot p(x) ) \geq \sum_x p(x) \log(x)$
 
 \textbf{Matrix inversion lemma}: $(\bf{PQ} + \bf{I}_N)^{-1} \bf{P} = \bf{P}(\bf{QP} + \bf{I}_M)^{-1}$
 
-Useful derivative: $\frac{\partial \bf{x^T B x}}{\partial \bf{x}} = (\bf{B + B^T}) \bf{x}$
+Useful derivatives: $\frac{\partial \bf{x^T B x}}{\partial \bf{x}} = (\bf{B + B^T}) \bf{x}$
+$\frac{\partial}{\partial x} \log[1+\exp{x}] = \sigma(x)$
 
 Marginal and Conditional Gaussians:
 $p(\bf{x}) = \mathcal{N}(\bf{x} | \boldsymbol\mu, \boldsymbol\Lambda^-1)$ 
@@ -104,7 +105,7 @@ $p(\bf{y}|\bf{x}) = \mathcal{N}(\bf{y} | \bf{Ax + b, L}^-1)
 p(\bf{y}) = \mathcal{N}(\bf{y} | \bf{A} \boldsymbol\mu + \bf{b}, \bf{L}^-1 + \bf{A} \boldsymbol\Lambda^-1 \bf{A}^T)$
 
 $p(\bf{x}|\bf{y}) = \mathcal{N}(\bf{x} |\boldsymbol\Sigma \{ \bf{A^T L(y - b) + \Lambda \mu} \}, \boldsymbol\Sigma)
-\text{where } \boldsymbol\Sigma = (\boldsymbol\Lambda + \bf{A^T L A})^{-1}
+\text{ where } \boldsymbol\Sigma = (\boldsymbol\Lambda + \bf{A^T L A})^{-1}
 $
 
 % ----------
@@ -135,6 +136,9 @@ where $\bf{H_k}$ is the $D \times D$ Hessian at step $k$: $\bf{H_k} = \frac{\par
 Newton's method is equivalent to solving many least-squares problems.
 
 Complexity: $\mathcal{O}(I N D^2 + I D^3)$, with the $D^3$ cost coming from the inversion of $\bf{H_k}$.
+
+IRLS: $\alpha_k = 1$ and as a sequence of least-squares $\bbeta^{(k+1)} = (\tilde{\bf{X}}^T \bf{S}_k \tilde{\bf{X}})^{-1} \tilde{\bf{X}}^T \bf{S}_k 
+[\tilde{\bf{X}} \bbeta^{(k)} + \bf{S}_k^{-1} (\bf{y} - \bf{\sigma}_k)]$
 
 \subsection{Expectation-Maximization}
 EM is a family of methods to find a MLE/MAP estimator if some of the data is missing (e.g. latent variables):
@@ -221,9 +225,16 @@ and $y = 1$ as class $\mathcal{C}_2$ and then decide a newly estimated $y$ belon
 to $\mathcal{C}_1$ if $y < 0.5$.
 
 \subsection{Logistic Regression}
+$\mathcal{L}_{mle}(\bbeta) = \sum\limits_{n=1}^N y_n \log \sigma(\tilde{\bf{x}}_n^T \bbeta) + (1-y_n) \log[1-\sigma(\tilde{\bf{x}}_n^T \bbeta)]
+= \sum\limits_{n=1}^N y_n \tilde{\bf{x}}_n^T \bbeta - \log[1 + \exp(\tilde{\bf{x}}_n^T \bbeta)]$
+
 $\frac{ \partial\mathcal{L}(\bbeta) }{ \partial \bbeta } = \tilde{\bf{X}}^T [\sigma(\tilde{\bf{X}} \bbeta) - \bf{y}]$
 
+$\bf{H}(\bbeta) = \bf{\tilde{X}^T S \tilde{X}}, \bf{S}_{nn} = \sigma(\bf{\tilde{x}}_n^T \bbeta) [1 - \sigma(\bf{\tilde{x}}_n^T \bbeta)]$ (diag)
+
 There's no closed form, we can use gradient descent.
+
+Linearly separable problem has many solutions $\Rightarrow$ solved by L2 regularization (penalized log. reg.): $\min\limits_\beta -\sum\limits_{n=1}^N \log p(y_n | \bf{x}_n^T, \bbeta) + \lambda \sum\limits_{d=1}^D\beta^2_d$ or $\bf{X^T S X} + \lambda \bf{I}_{D+1}$ (top-left = 0).
 
 \subsection{Generalized linear model}
 The GLM consists of three elements:
@@ -242,6 +253,7 @@ RMSE: $\sqrt{\frac{1}{N} \sum_{n=1}^{N}\left[y_n- \hat{p_n} \right]^2}$
 0-1 Loss: $ \frac{1}{N} \sum_{n=1}^{N} \delta(y_n, \hat{y_n})$
 
 Log-Loss: $- \frac{1}{N}  \sum_{n=1}^{N} y_n \log(\hat{p_n}) + (1-y_n) \log(1-\hat{p_n})$
+
 
 % ----------
 \section{Probabilistic framework}
@@ -407,13 +419,18 @@ f is called convex f: $\forall x_1, x_2 \in X, \forall t \in [0, 1]: \qquad f(tx
 
 Sum of two convex functions is convex. Composition of a convex function with a convex, nondecreasing function is convex. Linear, exponential and $\log(\sum \exp)$ functions are convex.
 
+\subsection{Cross-Validation}
+$K$-Fold cross-validation: split training data in $K$ splits, choose $1$ as test, $K-1$ as training, repeat and average test and training error. We can get estimate of generalization error, assess quality of model, get best parameters.
+
 \subsection{Bias-Variance Decomposition}
 \begin{colfig}
   \centering
   \includegraphics[width=\linewidth]{images/bias-variance.png}
 \end{colfig}
 
-Bias-variance comes directly out of the test error:
+In-sample error: error of one test sample. Test error: average over test data of in-sample error. Expected test error $\overline{teErr}$: average over all training data of test error. 
+
+Bias-variance comes directly out of the test error ($y_{true}=E[y]:$ true model, $(x,y = y_{true} + \epsilon):$ test pair observation, $\hat{y}=f(\bf{x}):$ test predictions):
  \begin{align*}
  \overline{teErr}
  &= E[(\text{observation} - \text{prediction})^2] = E[(y - \hat{y})^2] \\
@@ -468,8 +485,6 @@ In optimization, we get to the dual like this:
 
 \subsection{Occam's Razor}
 It states that among competing hypotheses, the one with the fewest assumptions should be selected. Other, more complicated solutions may ultimately prove correct, but in the absence of certainty, the fewer assumptions that are made, the better.
-
-\todo[inline]{TODO: K-fold cross-validation, definition of Test-Error, Train-Error}
 
 \todo[inline]{TODO: statistical goodness (robust to outliers, ...) vs. computational goodness (convex, low computational complexity, ...) tradeoff. No free lunch theorem.}
 
