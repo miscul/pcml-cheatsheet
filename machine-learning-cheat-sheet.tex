@@ -79,11 +79,15 @@ Poisson distribution: $\mathcal{P}(X| \lambda)$ \\
 $\implies p(X = k) = \frac{\lambda ^ k}{k!} \exp{(- \lambda)}$
 
 \subsection{Properties}
+Matrix multiplication complexity ($n \times m$ and $m \times p$): $\mathcal{O}(nmp)$, inversion: $\mathcal{O}(n^3)$
+
 \textbf{Bayes rule}: $p(A, B) = p(A|B) p(B) = p(B|A) p(A)$
 
 A matrix $\bf{M}$ is \textbf{positive semidefinite} $\iff \forall$ nonzero vector $\bf{a}$, we have $\bf{a}^T \bf{M} \bf{a} \geq 0$
 
 If $\bf{V}$ symmetric positive definite, then for all $\bf{P} \neq 0$, $\bf{P^T V P}$ is positive semi-definite (and even positive definite if $\bf{P}$ is not singular).
+
+Fisher: $I(\beta) = -\E\biggl[\frac{\partial^2 \log p(x|\beta)}{\partial\beta^2}\biggr]$
 
 \textbf{Jensen's inequality} applied to $\log$: $\log( \mathbb{E}[X] ) \geq \mathbb{E}[\log(X)]$ \\
 $\implies \log ( \sum_x x \cdot p(x) ) \geq \sum_x p(x) \log(x)$
@@ -93,16 +97,15 @@ $\implies \log ( \sum_x x \cdot p(x) ) \geq \sum_x p(x) \log(x)$
 Useful derivative: $\frac{\partial \bf{x^T B x}}{\partial \bf{x}} = (\bf{B + B^T}) \bf{x}$
 
 Marginal and Conditional Gaussians:
-$$
-\begin{aligned}
-p(\bf{x}) &= \mathcal{N}(\bf{x} | \boldsymbol\mu, \boldsymbol\Lambda^-1) \\
-p(\bf{y}|\bf{x}) &= \mathcal{N}(\bf{y} | \bf{Ax + b, L}^-1) \\
-\Downarrow \\
-p(\bf{y}) &= \mathcal{N}(\bf{y} | \bf{A} \boldsymbol\mu + \bf{b}, \bf{L}^-1 + \bf{A} \boldsymbol\Lambda^-1 \bf{A}^T)	\\
-p(\bf{x}|\bf{y}) &= \mathcal{N}(\bf{x} |\boldsymbol\Sigma \{ \bf{A^T L(y - b) + \Lambda \mu} \}, \boldsymbol\Sigma) \\
-\text{where } \boldsymbol\Sigma &= (\boldsymbol\Lambda + \bf{A^T L A})^{-1}
-\end{aligned}
-$$
+$p(\bf{x}) = \mathcal{N}(\bf{x} | \boldsymbol\mu, \boldsymbol\Lambda^-1)$ 
+
+$p(\bf{y}|\bf{x}) = \mathcal{N}(\bf{y} | \bf{Ax + b, L}^-1)
+\Rightarrow
+p(\bf{y}) = \mathcal{N}(\bf{y} | \bf{A} \boldsymbol\mu + \bf{b}, \bf{L}^-1 + \bf{A} \boldsymbol\Lambda^-1 \bf{A}^T)$
+
+$p(\bf{x}|\bf{y}) = \mathcal{N}(\bf{x} |\boldsymbol\Sigma \{ \bf{A^T L(y - b) + \Lambda \mu} \}, \boldsymbol\Sigma)
+\text{where } \boldsymbol\Sigma = (\boldsymbol\Lambda + \bf{A^T L A})^{-1}
+$
 
 % ----------
 \section{Optimization methods}
@@ -120,6 +123,8 @@ $\alpha$ is a parameter that needs to be chosen carefully.
 
 The gradient for MSE comes out as:
 $\frac{\partial \mathcal{L}}{\partial \bbeta} = - \frac{1}{N} \tilde{X}^T ( \boldsymbol y - \tilde{X} \bbeta )$
+
+Stochastic GD: when $N$ large, subsample and have sequence of $\alpha^{(k)}$. Ex: $\alpha^{(k)} = 1 / (1 + k)^r$, $r \in (0.5, 1)$. Robbins-Monroe condition: $\sum_{k=1}^\infty \alpha^{(k)} = \infty$, $\sum_{k=1}^\infty (\alpha^{(k)})^2 < \infty$
 
 \subsection{Newton's method}
 It uses second order derivatives information to converge faster (we approximate the objective function by a quadratic function rather than a line).
@@ -152,13 +157,19 @@ Simple linear regression: $y_n \approx \beta_0 + \beta_1 x_{n1}$
 
 Multiple linear regression: $y_n \approx f(\bf{x}_n) := \beta_0 + \beta_1 x_{n1} + \beta_2 x_{n2} + ... + \beta_D x_{nD}$
 
+Nonlinear basis function (polynomial, gaussian, ...): $y_n \approx f(\bf{x}_n) := \beta_0 + \beta_1 \phi_1(\bf{x_n}) + ... + \beta_D \phi_D(\bf{x_n})$
+
+L2 regularizer: $\frac{\lambda}{2N}\sum_{j=1}^M\beta_j^2$ (not $\beta_0$).
+
 \subsection{Linear basis function model}
 We can create more complex models while staying in the linear framework by transforming the inputs $X$ of dimensionality $D$ through a function $\phi : D \rightarrow M$.
 
 $y_n = \beta_0 + \sum_{i=1}^{M} \beta_i \phi_i(\bf{x_n}) =  \bf{\tilde\phi^T}(\bf{x}^T_n) \bbeta$.
 The optimal $\bbeta$ can be computed in closed form by $\bbeta = ( \tilde{\bPhi}^T \tilde{\bPhi})^{-1} \tilde{\bPhi}^T y$ where $\tilde{\bPhi}$ is a matrix with N rows and the n-th row is $[1, \phi_1(\bf{x}_n),  ...,  \phi_M(\bf{x}_n)]$. But note this requires $\tilde{\bPhi}^T \tilde{\bPhi}$ to be invertible (well-conditionned: $\tilde\bPhi$ full column-rank).
 
-Ridge regression: $\bbeta_{ridge} = ( \tilde{\boldsymbol\Phi}^T \tilde{\boldsymbol\Phi} + \lambda \boldsymbol I)^{-1} \tilde{\boldsymbol\Phi}^T \boldsymbol y$
+Ridge regression: $\bbeta_{ridge} = ( \tilde{\boldsymbol\Phi}^T \tilde{\boldsymbol\Phi} + \lambda \boldsymbol I)^{-1} \tilde{\boldsymbol\Phi}^T \boldsymbol y$ ($\boldsymbol I$ is $M+1 \times M+1$ and $=0$ on top left). Improves condition number of Gram matrix by lifting eigenvalues.
+
+MAP (likelihood $\times$ prior = posterior): $\bbeta_{ridge} = \arg \max_\beta \log[\prod\limits_{n=1}^N \mathcal{N}(y_n | \bf{x}_n^T\bbeta, \lambda) \times \mathcal{N}(\bbeta|0,\bf{I})]$
 
 \subsection{Cost functions}
 %\begin{colfig}
@@ -191,9 +202,14 @@ $\mathcal{L}_{\epsilon}(y, \hat{y}) = \begin{cases}
 \section{Least squares}
 Complexity: $\mathcal{O}(ND^2 + D^3)$
 The gradient of the MSE set to zero is called the normal equation:
-$$  \bf{X}^T \bf{X} \bbeta - \bf{X}^T \bf{y} = 0$$
+$  \bf{X}^T \bf{X} \bbeta - \bf{X}^T \bf{y} = 0$.
+
+Geometric interpretation: choosing a vector in the span of $\tilde{X}$. $\tilde{X}$ needs full rank ($=D$) $\Rightarrow$ dim. of null space 0 $\Rightarrow$ Gram matrix positive definite $\Rightarrow$ invertible.
+
 We can solve this for $\bbeta$ directly (by matrix manipulation)
 $\bbeta = ( \bf{\tilde{X}}^T \bf{\tilde{X}} )^{-1} \bf{\tilde{X}}^T \bf{y}$
+
+Doesn't work when $\tilde{X}$ is rank deficient ($D>N$) or matrix is \textbf{ill-conditioned} (columns (nearly) colinear, rounding can cause problems). For ill-conditioned matrices we may use partial pivoting (pivoting on the largest variable available in column).
 
 % ----------
 \section{Classification}
@@ -245,7 +261,8 @@ Assuming different $p$ is basically what makes this so flexible. We can chose e.
 \end{tabular}
 
 It is a sample approximation of the expected likelihood:
-$\mathcal{L}_{lik}(\bbeta) \approx E_y[ p(y \mid \bbeta) ]$
+$\mathcal{L}_{lik}(\bbeta) \approx E_y[ p(y \mid \bbeta) ]$.
+It is consistent (more data points $\Rightarrow$ converges in probability) and efficient (in best possible manner, achieves Cramor-Rao lower bound: Cov($\bbeta_{mle}$)$=\bf{I^{-1}}(\bbeta_{true})$, $\bf{I}$ is Fisher).
 
 \subsection{Bayesian methods}
 Bayes rule: $p(A, B) = p(A|B) p(B) = p(B|A) p(A)$
@@ -447,12 +464,7 @@ In optimization, we get to the dual like this:
 \end{colfig}
 
 % ----- Less useful concepts
-\subsection{Consistency}
-An estimator is said to be consistent, if it eventually recovers the true parameters that generated the data as the sample size goes to infinity. Of course, this only makes sense if the data actually comes from the specified model, which is not usually the case. Nevertheless, it can be a useful theoretical property.
 
-\subsection{Efficiency}
-An estimator is called efficient if it achives the Cramer-Rao lower bound:
-$\Var{(\bbeta)} \geq 1/I(\bbeta)$, where I is the Fisher information.
 
 \subsection{Occam's Razor}
 It states that among competing hypotheses, the one with the fewest assumptions should be selected. Other, more complicated solutions may ultimately prove correct, but in the absence of certainty, the fewer assumptions that are made, the better.
