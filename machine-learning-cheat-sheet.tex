@@ -60,6 +60,7 @@
 \section{General}
 $y = y_{true} + \epsilon$, $\hat{y} = f(\bf{\hat{x}}), \forall \bf{\hat{x}}$.
 
+%TODO more clearly
 likelihood $\times$ prior = posterior (MAP) = joint (GMM) = posterior $\times$ marginal likelihood, or 
 $P(A,B) = P(A|B) P(B) = P(B | A) P(A)$
 
@@ -283,29 +284,37 @@ Bayes rule: $p(A, B) = p(A|B) p(B) = p(B|A) p(A)$
 
 The \textbf{prior} $p(\bf{f}|\bf{X})$ encodes our prior belief about the ``true'' model $\bf{f}$. The \textbf{likelihood} $p(\bf{y}|\bf{f})$ measures the probability of our (possibly noisy) observations given the prior.
 
+Parameters $\theta = \{\mu, \Sigma, \pi\} \rightarrow$ Intent variable $\bf{z} \rightarrow$ Data $\bf{y} \leftarrow \theta$: $P_{\btheta} (\bf{y}, \bf{z})$. Inference: find $\bf{z}$ given $\bf{y}, \btheta$, Learning: find $\btheta$ given $\bf{y}$.
+
 Least-squares tries to find model parameters $\bbeta$ which maximize the likelihood. Ridge regression maximizes the \textbf{posterior} $p(\bbeta|\bf{y})$
 
 \subsection{Bayesian networks}
-We can use a Directed Acyclic Graph (DAG) to define a joint distribution of events. For example, we can express the relationship between \textit{latent factors} (possible ``causes'') $z_i$ and \textit{observations} (results) $y_i$:
+Given a directed graph $G$ and parameters $\theta$, bayesian network defines joint distribution $p_{\theta}(\bf{x}) = \prod_{k=1}^K p_{\theta}(x_k | pa_k), pa_k$ parents of $x_k$. 
+
+\textbf{Exemple}: Latent factors $z_i$ and observations results $y_i$, factorization $p(y_1, y_2, z_1, z_2, z_3) = p(y_1 | z_1, z_2) p(y_2 | z_2, z_3) p(z_1) p(z_2) p(z_3)$.
 
 \begin{colfig}
   \centering
-y  \includegraphics[height=1.5cm]{images/bayesian-network.png}
+  \includegraphics[height=1cm]{images/bayesian-network.png}
 \end{colfig}
 
-This example can be factorized as follows:
-$p(y_1, y_2, z_1, z_2, z_3) = p(y_1 | z_1, z_2) p(y_2 | z_2, z_3) p(z_1) p(z_2) p(z_3)$
-
-We can then obtain the distribution over latent factors ($z_i$) by marginalizing over the unknown variables:
+We can then obtain the distribution over latent factors ($z_i$) by marginalizing over the unknown variables (marginal posterior probabilities):
 $p(z_1, z_2, z_3 | y_1, y_2) = \frac{\text{joint}}{p(y_1, y_2)}$\\
 $\implies p(z_1 | y_1, y_2) = \sum_{z_2, z_3} \frac{\text{joint}}{p(y_1, y_2)}$
 
+Complexity for $D$ unknowns $\mathcal{O}(2^M E)$, $E$ \#edges.
+
+\textbf{Sum-product algorithm}: $p(z_1 | \bf{y}) \propto$
+$\sum_{z_3} \sum_{z_2} p(y_a|z_1,z_2) p(y_b | z_2, z_3) p(z_1) p(z_2) p(z_3
+) = p(z_1) \{ \sum_{z_2} p(y_a | z_1, z_2) p(z_2) [ \sum_{z_3} p(y_b | z_2, z_3) p(z_3) ] \}$
+
 \subsection{Belief propagation}
-Belief propagation is a message-passing based algorithm used to compute desired marginals (e.g. $p(z_1 | y_1, y_2)$) efficiently. It leverages the factorized expression of the joint. Messages passed:
+Learning inference of latent variables. Message-passing based algorithm used to compute desired marginals (e.g. $p(z_1 | y_1, y_2)$). $\bf{1)}$ Init all $m_i$ and iter until stabilization: $\bf{a)}$ $m_{i \rightarrow a}$, $\bf{b)}$ $m_{a \rightarrow i}$; $\bf{2)}$ get marginals $p(z_i | \bf{y}) = p(z_j) \prod_{j \in \mathbb{N} (a)} m_{j \rightarrow a} (z_j)$.
 
-$m_{z_i \rightarrow y_j} = p(z_i) \Pi(\text{messages received except from } y_j)$
+$m_{i \rightarrow a}(z_i) = p(z_i) \prod_{b \in \mathbb{N}(i) \setminus a} m_{b \rightarrow i}(z_i) $
 
-$m_{y_j \rightarrow z_i} = \sum_{z_k \neq z_i} p(y_j | z_k) \Pi(\text{messages received except from } z_i)$
+$m_{a \rightarrow i}(z_i) = \sum_{j \neq i} p(y_a | pa_a) \prod_{j \in \mathbb{N}(a) \setminus i } m_{j \rightarrow a}(z_j)$
+
 
 % ----------
 \section{Kernel methods}
@@ -439,18 +448,26 @@ Project $\bf{x}_n$ to smaller dimension $\bf{z}_n \in \mathbb{R}^M$ to minimize 
 
 % ----------
 \section{PCA}
+Dimensionality reduction, latent factor model, minimizes reconstruction error / maximizes variance of projection / decorrelate data. In matrix factorization we get $\bf{\tilde{X}} = \bf{WZ}^T$, if columns of $\bf{W}$ are orthogonal, we have PCA.
+
 Find the eigenvectors of the covariance matrix $\bf{X^T X}$ of the data. These form an orthonormal basis $\{ \bf{w}_1, ..., \bf{w}_N\}$ for the data in the directions that have highest variance.
 One can then use the first $L < D$ vectors to rebuild the data: $\bf{\hat{x}}_i = \bf{W} \bf{z}_i = \bf{W} \bf{W}^T \bf{x}_i$, with $\bf{W} = \begin{bmatrix} \bf{w}_1 ; ... ; \bf{w}_L \end{bmatrix}$.
 This minimizes mean square error $\frac{1}{N} \sum_{i=1}^N \bf{x}_i - \bf{\hat{x}}_i^2$.
 
-\section{SVD}
-The same as with PCA, we can do with SVD:
+Principal components (columns of $\bf{U}$) decorrelate the cov matrix: $\bf{U}^T \bf{XX}^T \bf{U} = \bf{S}^2$.
+
+\subsection{SVD}
+Get orthogonal factorization $\bf{X} = \bf{USV}^T$, $\bf{U}, \bf{V}$ left and right singular vectors (orthonormal of sizes $D \times D, N \times N$), $\bf{S}$ singular values (diagonal ordered values size $D \times N$). Approximations $\bf{W} = \bf{US}^{1/2}, \bf{Z} = \bf{VS}^{1/2}$.
+
+Spectral view $\bf{X} = \sum_{j=1}^D s_j \bf{u}_j \bf{v}_j^T$:
 \begin{colfig}
   \centering
   \includegraphics[width=\linewidth]{images/svd.png}
 \end{colfig}
 
 The singular vals of a $N \times D$ matrix $\bf{X}$ are the square roots of the eigenvalues of the $D \times D$ matrix $\bf{X^T X}$
+
+
 % ----------
 \section{Concepts}
 
