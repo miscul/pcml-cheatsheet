@@ -1,4 +1,4 @@
-\documentclass[10pt,a4paper,landscape]{article}
+\documentclass[10pt,a4paper,landscape]{extarticle}
 \usepackage{multicol}
 \usepackage{calc}
 \usepackage{ifthen}
@@ -42,15 +42,18 @@
 \raggedright
 \footnotesize
 \sffamily
+
+\setlength{\columnsep}{0.5pt}
+\setlength{\columnseprule}{0.25pt}
+
 \begin{multicols*}{4}
 
 % multicol parameters
 % These lengths are set only within the two main columns
-%\setlength{\columnseprule}{0.25pt}
-\setlength{\premulticols}{1pt}
-\setlength{\postmulticols}{1pt}
-\setlength{\multicolsep}{1pt}
-\setlength{\columnsep}{2pt}
+%\setlength{\premulticols}{1pt}
+%\setlength{\postmulticols}{1pt}
+%\setlength{\multicolsep}{10pt}
+%\setlength{\columnsep}{330pt}
 
 %\begin{center}
 %\Large{\underline{Machine Learning Cheat Sheet}}
@@ -58,14 +61,6 @@
 
 % ----------
 \section{General}
-$y = y_{true} + \epsilon$, $\hat{y} = f(\bf{\hat{x}}), \forall \bf{\hat{x}}$.
-
-%TODO more clearly
-likelihood $\times$ prior = posterior (MAP) = joint (GMM) = posterior $\times$ marginal likelihood, or 
-$P(A,B) = P(A|B) P(B) = P(B | A) P(A)$
-
-log-concavity: $\log ( \sum_{k=1}^K p_k t_k) \geq \sum_{k=1}^K p_k \log t_k$
-
 \subsection{Distributions}
 Multivariate gaussian: $\mathcal{N}(\bf{X} | \bf{\mu} , \bf{\Sigma})
 \implies p(\bf{X} = \bf{x}) = (2 \pi)^{-d/2} |\bf{\Sigma|}^{-1/2} \exp{[- \frac{1}{2} (\bf{x} - \bf{\mu})^T \bf{\Sigma}^{-1} (\bf{x} - \bf{\mu})]}$
@@ -80,6 +75,14 @@ Exponential family ($\frac{h(y)}{Z}$ partition fct, $\eta$ natural parameter, $\
 $p(y|\eta) := \frac{h(y)}{Z} \exp[\eta^T \phi(y) - A(\eta)], \frac{\partial A(\eta)}{\partial \eta} = E[\phi(\eta)], \frac{\partial^2 A(\eta)}{\partial \eta^2} = \Var[\phi(\eta)]$
 
 \subsection{Properties}
+$y = y_{true} + \epsilon$, $\hat{y} = f(\bf{\hat{x}}), \forall \bf{\hat{x}}$.
+
+%TODO more clearly
+likelihood $\times$ prior = posterior (MAP) = joint (GMM) = posterior $\times$ marginal likelihood, or 
+$P(A,B) = P(A|B) P(B) = P(B | A) P(A)$
+
+log-concavity: $\log ( \sum_{k=1}^K p_k t_k) \geq \sum_{k=1}^K p_k \log t_k$
+
 Matrix multiplication complexity ($n \times m$ and $m \times p$): $\mathcal{O}(nmp)$, inversion: $\mathcal{O}(n^3)$
 
 \textbf{Bayes rule}: $p(A, B) = p(A|B) p(B) = p(B|A) p(A)$
@@ -146,18 +149,15 @@ EM is method to find MLE/MAP estimator if some of the data is missing (e.g. late
 
 \textbf{GMM} $p_{kn}^{(i)} = p(r_n | \bf{x}_n, \btheta^{(i)})$ being posterior distribution of latent variable, iteratively until convergence:
 
-\begin{itemize}
-\item \textbf{E-step} get lower bound to cost s.t. tight at previous $\btheta^{(i)}$ (using log-concavity): $p_{kn}^{(i)} = \frac{\pi_k^{(i)} \mathcal{N}(\bf{x}_n | \bf{\mu}_k^{(i)}, \bf{\Sigma}_k^{(i)})}{\sum_{k=1}^K \pi_k^{(i)} \mathcal{N}(\bf{x}_n|\bf{\mu}_k^{(i)}, \bf{\Sigma}_k^{(i)})}$ 
+$\bf{1)}$ \textbf{E-step} get lower bound to cost s.t. tight at previous $\btheta^{(i)}$ (using log-concavity): $p_{kn}^{(i)} = \frac{\pi_k^{(i)} \mathcal{N}(\bf{x}_n | \bf{\mu}_k^{(i)}, \bf{\Sigma}_k^{(i)})}{\sum_{k=1}^K \pi_k^{(i)} \mathcal{N}(\bf{x}_n|\bf{\mu}_k^{(i)}, \bf{\Sigma}_k^{(i)})}$ 
 and cost: $\mathcal{L}(\btheta^{(i)}) = \sum_{n=1}^N \log \sum_{k=1}^K \pi_k^{(i)} \mathcal{N}(\bf{x}_n | \bf{\mu}_k^{(i)}, \bf{\Sigma}_k^{(i)})$
 
-\item \textbf{M-step} update: $
+$\bf{2)}$ \textbf{M-step} update: $
 \max_{\btheta} \sum_{n=1}^N \sum_{k=1}^K p_{kn}^{(i)} [\log \pi_k + \log \mathcal{N} ( \bf{x}_n | \bf{\mu}_k, \bf{\Sigma}_k)], 
 \bf{\mu}_k^{(i+1)} = \frac{\sum_{n=1}^N p_{kn}^{(i)} \bf{x}_n}{p_{kn}^{(i)}},
 \bf{\Sigma}_k^{(i+1)} = \frac{\sum_{n=1}^N p_{kn}^{(i)} (\bf{x}_n - \bf{\mu}_k^{(i+1)})(\bf{x}_n - \bf{\mu}_k^{(i+1)})^T }{p_{kn}^{(i)}},
 \pi_k^{(i+1)} = \frac{1}{N} \sum_{n=1}^N p_{kn}^{(i)}
 $
-
-\end{itemize}
 
 % ----------
 \section{Regression}
@@ -323,15 +323,9 @@ $(\bf{K})_{i,j} = \kappa(\bf{x_i}, \bf{x_j}) = \vec \phi(\bf{x_i})^T \vec \phi(\
 
 The $\phi$ are not that important in the end, because we only use the Kernel as is. Sometimes it's even impossible to write them down explicitly.
 
-\begin{tabular}{ l | l }
-  \hline
-  Linear     & $\kappa(\bf{x_i}, \bf{x_j}) = \bf{x_i}^T \bf{x_j}$ \\
-  \hline
-  Polynomial & $\kappa(\bf{x_i}, \bf{x_j}) = (\bf{x_i}^T \bf{x_j} + c)^d$ \\
-  \hline
-  RBF        & $\kappa(\bf{x_i}, \bf{x_j}) = \exp\left(-\frac{||\bf{x_i} - \bf{x_j}||^2}{2\sigma^2}\right)$ \\
-  \hline
-\end{tabular}
+$k(\bf{x_i}, \bf{x_j})$: Linear $= \bf{x_i}^T \bf{x_j}$, 
+Polynomial $= (\bf{x_i}^T \bf{x_j} + c)^d$,
+RBF $= \exp\left(-\frac{||\bf{x_i} - \bf{x_j}||^2}{2\sigma^2}\right)$.
 
 Properties of a Kernel: $\bf{1)}$ $\bf{K}$ should be symmetric: $\bf{K}^T = \bf{K}$; $\bf{2)}$ $\bf{K}$ should be positive semi-definite: $\forall$ nonzero vector $\bf{a}, \bf{a}^T \bf{K} \bf{a} \geq 0$.
 
@@ -359,51 +353,51 @@ Set $\bf{G}(\balpha, \bbeta)$: $C[v_n]_+ = \max_{\alpha_n} \alpha_n v_n, \alpha_
 \textbf{Get dual}: switch min/max, derive, equal to 0, plug back $\bbeta$.
 
 \subsection{Gaussian Process}
-The predicting function $f$ is interpreted as a random variable with jointly gaussian prior: $\mathcal{N}(f | \bf{0}, \bf{K})$.
-Defining the Kernel matrix $\bf{K} = \kappa(\bf{X}, \bf{X})$ defines the prior. The key idea is, that if $\bf{x}_i$ and $\bf{x_j}$ are
-deemed by the kernel to be similar, then we expect the output of $f$ at those points to be similar, too.
+Predicting function $\bf{f}$ interpreted as a RV with jointly gaussian prior: $\mathcal{N}(\bf{f} | \bf{0}, K(X))$.
+Kernel function $k(\bf{x}_n, \bf{x}_m)$ defines the prior. Idea: if $\bf{x}_i$ and $\bf{x_j}$ are similar kernel-wise, output of points similar too.
 
-We can sample functions from this random variable $f$ and we can use prior + measurements to generate predictions.
-
-If we have measurements $\bf{y}$ available, we get a joint distribution with the $\bf{\hat{y}}$ to be predicted:
+We sample functions from RV $\bf{f}$ and use prior + measurements to generate predictions. With measurements $\bf{y}$, we get joint distribution with $\bf{\hat{f}}$ to be predicted:
 
 $
 \begin{bmatrix}
   \bf{y} \\
-  \bf{\hat{y}}
+  \bf{\hat{f}}
 \end{bmatrix}
 =
 \mathcal{N} \left(
   \bf{0},
   \begin{bmatrix}
-    \kappa(\bf{X}, \bf{X}) + \sigma_n^2 I  & \kappa(\bf{X}, \bf{\hat{X}}) \\
-    \kappa(\bf{\hat{X}}, \bf{X}),          & \kappa(\bf{\hat{X}}, \bf{\hat{X}})
+    K(X, X) + \sigma_n^2 I  & K(X, \hat{X}) \\
+    K(\hat{X}, X),          & K(\hat{X}, \hat{X})
   \end{bmatrix}
 \right)
 $
 
-This can be conditioned on $\bf{y}$ to find the PDF of $\bf{\hat{y}}$. Advantage: we output our prediction as probabilities (which represent uncertainty).
+
+Conditioning on $\bf{y}$ (proba. output): $\bf{\hat{f}} | \bf{y}, \hat{X}, X \sim \mathcal{N}(\mu ' , \Sigma ')$ with:
+$\mu' = K(\hat{X}, X) [K(X,X) + \sigma_n^2 I]^{-1} \bf{y}, \Sigma' = K(\hat{X}, \hat{X}) - K(\hat{X}, X)[K(X,X) + \sigma_n^2 I ]^{-1} K(X, \hat{X})$
+
 
 % ----------
 \section{Neural Networks}
-A feed forward Neural Network is organized in $K$ layers, each layer with $M^{(k)}$ hidden units $z_i^{(k)}$. Activations $a_i^{(k)}$ are computed as the linear combination of the previous layer's terms, with weights $\bbeta^{(k)}$ (one $M^{(k-1)} \times 1$ vector of weights for each of the $M^{(k)}$ activations). Activations are then passed through a (possibly nonlinear) function $h$ to compute the hidden unit $z_i^{(k)}$.
+A feed forward NN has $K$ layers with $\{y_n, \bf{x}_n\}$ $n$th input-output pair, $\bf{z}_n^{(k)}$ $k$th hidden vector, $\bf{a}_n^{(k)}$ corresponding activation, $g$ link function. For the $k$th layer and $m$th activation: 
+$\bf{a}_n^{(k)} = \bf{B}^{(k)} \bf{z}_n^{(k-1)}, \bf{z}_n^{(k)} = h( \bf{a}_n^{(k)}), \bf{z}_n^{(0)} = \bf{x}_n, \bf{B}^{(k)} \text{ has rows } (\bbeta_m^{(k)})^T$.
 
-$\bf{x}_n \xrightarrow{\bbeta_i^{(1)}} a_i^{(1)} \xrightarrow{h} z_i^{(1)} \xrightarrow{\bbeta^{(2)}} \dots \bf{z}^{(K)} = \bf{y}_n$
+$\bf{x}_n \xrightarrow{\bf{B}^{(1)}} \bf{a}_n^{(1)} \xrightarrow{h(\bf{a}_n^{(k)})} \bf{z}_n^{(1)} \xrightarrow{\bf{B}^{(2)}} \dots \bf{z}_n^{(K-1)} \xrightarrow{g} \bf{y}_n$
 
-\subsection{Backpropagation}
-It's an algorithm which computes the gradient of the cost $\mathcal{L}$ w.r.t. the parameters $\bbeta^{(k)}$.
+$\hat{y}_n = g((\bbeta^{(K-1)})^T * h(\bf{B}^{(K-2)} * h(\dots * h(\bf{B}^{(1)} * \bf{x}_n)))$.
 
-Forward pass: compute $a_i$, $z_i$ and $\bf{y}_n$ from $\bf{x}_n$.
+\paragraph{Backpropagation}
+Algorithm computing $\frac{\partial \mathcal{L}}{\partial \bf{B}^{(k)}}$:
+$\bf{1)}$ Forward pass: compute $\bf{a}_n^{(k)}$, $\bf{z}_n^{(k)}$ and $\bf{y}_n$ from $\bf{x}_n$;
+$\bf{2)}$ Backward pass: derivatives $\bdelta_n^{(k-1)} := \partial \mathcal{L} / \partial \bf{a}_n^{(k-1)} = \text{diag}[ \bf{h}'(\bf{a}^{(k)}) ] (\bf{B^{(k)}})^T \bdelta^{(k)}$;
+$\bf{3)}$ $\frac{\partial \mathcal{L}}{\partial \bf{B}^{(k)}} = \sum_n \bdelta_n^{(k)} (\bf{z}_n^{(k)})^T, \frac{\partial \mathcal{L}}{\partial \bf{B}^{(1)}} = \bdelta^{(1)} \bf{x}^T, \frac{\partial \mathcal{L}}{\partial \bf{B}^{(k)}} = \bdelta^{(k)} \bf{z}^{(k)T}$.
 
-Backward pass: work out derivatives from outputs to the target $\bbeta_i^{(k)}$. Using the chain rule:\\
-$\bdelta^{(k-1)} = \frac{\partial \mathcal{L}}{\partial \bf{a}^{(k-1)}} = diag[ h'(\bf{a}^{(k-1)}) ] \bf{B^{(k)T}} \bdelta^{(k)}$\\
-$\frac{\partial \mathcal{L}}{\partial \bf{B}^{(1)}} = \bdelta^{(1)} \bf{x}^T$\\
-$\frac{\partial \mathcal{L}}{\partial \bf{B}^{(k)}} = \bdelta^{(k)} \bf{z}^{(k)T}$
+%removed: not in slides
+%\subsection{Regularization}
+%NN are not \textit{identifiable} (existence of many local optima), therefore the maximum likelihood estimator is not \textit{consistent}.
 
-\subsection{Regularization}
-NN are not \textit{identifiable} (existence of many local optima), therefore the maximum likelihood estimator is not \textit{consistent}.
-
-NN are universal density estimators, and thus prone to severe overfitting. Techniques used to reduce overfitting include early stopping (stop optimizing when test error starts increasing) and ``weight decay'' (i.e. $L_2$ regularization).
+%NN are universal density estimators, and thus prone to severe overfitting. Techniques used to reduce overfitting include early stopping (stop optimizing when test error starts increasing) and ``weight decay'' (i.e. $L_2$ regularization).
 
 % ----------
 \section{Support Vector Machines}
@@ -415,6 +409,27 @@ Convex but not differentiable. In the dual, the same problem can be formulated a
 $\max_{\alpha \in [0; C]^N} \balpha^T \bf{1} - \frac{1}{2} \balpha^T \bf{Y K Y} \balpha , \quad \balpha^T \bf{y} = 0$
 
 $\balpha$ is sparse and non-zero only for data instrumental in determining decision boundaries. $\alpha_n$ is the slope of lines lower bound of Hinge. 3 kinds support vectors $\tilde{\phi}_n$: $\bf{1)}$ Not a SV (outside margin, $\alpha_n = 0$); $\bf{2)}$ essential SV (on the margin, $\alpha_n \in (0,C)$); $\bf{3)}$ bound SV (outside margin, other side, $\alpha_n = C$).
+
+% ----------
+\section{Trees}
+Top-down building (greedy), one split at a time, recursively (space partitioning).
+Splitting data: find a split $(k, \tau)$ minimizing impurity measure at leaves: $\{ k^*, \tau^* \} = \argmin_{k, \tau} I_{\text{split}} (D, k, \tau), x_k > \tau$.
+
+Given $N$ training $X=\{\bf{x}_i, y_i\}^N_{i=1}, y_i \in \{0,1\}$:
+$\bf{1)}$ split training data $(L,R) = \{\bf{x}_i, y_i\} \text{ s.t. } x_{ik} (>,\leq) \tau$
+$\bf{2)}$ leaf proba. $p_{(L,R)} = \frac{\#y_i = 1}{N_{(L,R)}}$
+$\bf{3)}$ impurity $I_{\text{split}} = N_L I(p_L) + N_R I(p_R)$
+
+Impurity measures: misclassification error $I(p) = 1 - \max (p, 1-p)$, cross-entropy $I(p) = -p \log p - (1-p) \log (1-p)$, gini $I(p) = 2p(1-p)$
+
+\subsection{Random Forests / Model Averaging}
+Training: learn $M$ trees on different subsets of data; prediction: average prediction $f_i$ of each tree. We want large $M$ and low correlation between them. Var reduction ratio: $\frac{V(z_1 = f_1) = \sigma^2}{V(z_M = \frac{1}{M} \sum_{i=1}^M f_i) = \frac{1}{M} \sigma^2 + \rho \frac{M-1}{M} \sigma^2} \rightarrow \frac{1}{\rho}$
+
+Decorrelating trees: 
+$\bf{1)}$ bagging (randomize training data): generate $X^i$ by randomly sampling $N$ samples with replacement from $X$.
+$\bf{2)}$ randomize feature space: search for $k$ over reduced random subset of features $m_{\text{try}}$.
+
+Parameters: max tree depth, nb of trees, $m_{\text{try}} (= \sqrt{D}$).
 
 % ----------
 \section{Unsupervised Learning}
@@ -462,7 +477,7 @@ Get orthogonal factorization $\bf{X} = \bf{USV}^T$, $\bf{U}, \bf{V}$ left and ri
 Spectral view $\bf{X} = \sum_{j=1}^D s_j \bf{u}_j \bf{v}_j^T$:
 \begin{colfig}
   \centering
-  \includegraphics[width=\linewidth]{images/svd.png}
+  \includegraphics[height=2cm]{images/svd.png}
 \end{colfig}
 
 The singular vals of a $N \times D$ matrix $\bf{X}$ are the square roots of the eigenvalues of the $D \times D$ matrix $\bf{X^T X}$
@@ -482,34 +497,25 @@ $K$-Fold cross-validation: split training data in $K$ splits, choose $1$ as test
 \subsection{Bias-Variance Decomposition}
 \begin{colfig}
   \centering
-  \includegraphics[width=\linewidth]{images/bias-variance.png}
+  \includegraphics[trim=0cm 3cm 0cm 0cm, clip=true, height=3cm]{images/bias-variance.png}
 \end{colfig}
 
 In-sample error: error of one test sample. Test error: average over test data of in-sample error. Expected test error $\overline{teErr}$: average over all training data of test error. 
 
 Bias-variance comes directly out of the test error ($y_{true}=E[y]:$ true model, $(x,y = y_{true} + \epsilon):$ test pair observation, $\hat{y}=f(\bf{x}):$ test predictions):
- \begin{align*}
- \overline{teErr}
- &= E[(\text{observation} - \text{prediction})^2] = E[(y - \hat{y})^2] \\
- &= E[(y - y_{true} + y_{true} - \hat{y})^2] \\
- &=\underbrace{E[(y - y_{true})^2]}_{\text{var of measurement}} + E[(y_{true} - \hat{y})^2] \\
- &=\sigma^2 + E[(y_{true} - E[\hat{y}] + E[\hat{y}] - \hat{y})^2] \\
- &=\sigma^2 + \underbrace{E[(y_{true} - E[\hat{y}])^2]}_{\text{pred bias}^2} +\underbrace{E[(E[\hat{y}] - \hat{y})^2]}_{\text{pred variance}}
-\end{align*}
+$\overline{teErr} 
+= E[(\text{observation} - \text{prediction})^2] = E[(y - \hat{y})^2]
+= E[(y - y_{true} + y_{true} - \hat{y})^2]
+=\underbrace{E[(y - y_{true})^2]}_{\text{var of measurement}} + E[(y_{true} - \hat{y})^2]
+=\sigma^2 + E[(y_{true} - E[\hat{y}] + E[\hat{y}] - \hat{y})^2]
+=\sigma^2 + \underbrace{E[(y_{true} - E[\hat{y}])^2]}_{\text{pred bias}^2} +\underbrace{E[(E[\hat{y}] - \hat{y})^2]}_{\text{pred variance}}
+$
 
-\begin{tabular}{ l || c | c }
-                          & bias & variance \\
-  \hline
-  regularization          & +    & - \\
-  choose simpler model    & +    & - \\
-  more data               & -    & \\
-  \hline
-\end{tabular}
+Adjustment methods (bias/variance): regularization (+/-), choose simpler model (+/-), more data (-/ ).
 
 \subsection{Identifiability}
-We say that a statistical model $\mathcal{P} = \{P_\theta: \theta \in \Theta\}$ is identifiable if the mapping $\theta \mapsto P_\theta$ is one-to-one:
-$P_{\theta_1}=P_{\theta_2} \quad\Rightarrow\quad \theta_1=\theta_2 \quad\ \text{for all } \theta_1,\theta_2\in\Theta.$
-
+Statistical model $\mathcal{P} = \{P_\theta: \theta \in \Theta\}$ identifiable if mapping $\theta \mapsto P_\theta$ is one-to-one:
+$P_{\theta_1}=P_{\theta_2} \quad\Rightarrow\quad \theta_1=\theta_2 \quad\ \forall \theta_1,\theta_2\in\Theta.$
 A non-identifiable model will typically have many local optima yielding the same cost, e.g. $\mathcal{L}(W, Z) = \mathcal{L}(aW, \frac{1}{a} Z)$
 
 \subsection{Curse of dimensionality}
@@ -526,8 +532,6 @@ Expected edge length $e_D(r) = r^{1/D}$: to capture $r$ of data we must cover $e
 It states that among competing hypotheses, the one with the fewest assumptions should be selected. Other, more complicated solutions may ultimately prove correct, but in the absence of certainty, the fewer assumptions that are made, the better.
 
 \todo[inline]{TODO: statistical goodness (robust to outliers, ...) vs. computational goodness (convex, low computational complexity, ...) tradeoff. No free lunch theorem.}
-
-\todo[inline]{TODO: Decision Trees and Random Forests and Model averaging}
 
 % ---------- Credits
 \section{Credits}
